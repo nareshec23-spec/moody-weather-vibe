@@ -1,1 +1,7 @@
 project_id = "vcrgxrsniugkikoefukn"
+
+[functions.get-weather]
+verify_jwt = false
+
+[functions.get-forecast]
+verify_jwt = false

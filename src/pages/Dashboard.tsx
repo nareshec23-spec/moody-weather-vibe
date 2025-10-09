@@ -2,9 +2,10 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Droplets, Wind, Sun, Eye } from "lucide-react";
+import { Search, MapPin, Droplets, Wind, Sun, Eye, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import { supabase } from "@/integrations/supabase/client";
 
 const Dashboard = () => {
   const [city, setCity] = useState("New York");
@@ -26,21 +27,39 @@ const Dashboard = () => {
   const fetchWeather = async (cityName: string) => {
     setLoading(true);
     try {
-      // Simulated weather data - in production, this would call OpenWeatherMap API
-      const mockData = {
-        city: cityName,
-        temperature: Math.floor(Math.random() * 30) + 10,
-        feelsLike: Math.floor(Math.random() * 30) + 10,
-        condition: ['Clear', 'Cloudy', 'Rainy', 'Sunny'][Math.floor(Math.random() * 4)],
-        humidity: Math.floor(Math.random() * 40) + 40,
-        windSpeed: Math.floor(Math.random() * 20) + 5,
-        uvIndex: Math.floor(Math.random() * 10) + 1,
-        visibility: Math.floor(Math.random() * 5) + 5,
+      console.log('Fetching weather for:', cityName);
+      const { data, error } = await supabase.functions.invoke('get-weather', {
+        body: { city: cityName }
+      });
+
+      if (error) {
+        console.error('Error fetching weather:', error);
+        toast.error("Failed to fetch weather data");
+        return;
+      }
+
+      if (!data) {
+        toast.error("No weather data received");
+        return;
+      }
+
+      const weatherData = {
+        city: data.name,
+        temperature: Math.round(data.main.temp),
+        feelsLike: Math.round(data.main.feels_like),
+        condition: data.weather[0].main,
+        description: data.weather[0].description,
+        humidity: data.main.humidity,
+        windSpeed: Math.round(data.wind.speed * 3.6), // Convert m/s to km/h
+        visibility: Math.round(data.visibility / 1000),
+        pressure: data.main.pressure,
+        cloudiness: data.clouds?.all || 0,
       };
       
-      setWeather(mockData);
-      toast.success(`Weather loaded for ${cityName}`);
+      setWeather(weatherData);
+      toast.success(`Weather loaded for ${data.name}`);
     } catch (error) {
+      console.error('Error:', error);
       toast.error("Failed to fetch weather data");
     } finally {
       setLoading(false);
@@ -74,10 +93,11 @@ const Dashboard = () => {
                 onChange={(e) => setSearchCity(e.target.value)}
                 onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
                 className="pl-10"
+                disabled={loading}
               />
             </div>
-            <Button onClick={handleSearch} disabled={loading}>
-              Search
+            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
             </Button>
           </div>
         </Card>
@@ -92,16 +112,19 @@ const Dashboard = () => {
               </div>
               
               <div className="flex items-center justify-between">
-                <div>
-                  <div className="text-6xl font-bold mb-2">{weather.temperature}°C</div>
-                  <div className="text-xl text-muted-foreground flex items-center gap-2">
-                    <span className="text-3xl">{getWeatherEmoji(weather.condition)}</span>
-                    {weather.condition}
-                  </div>
-                  <div className="text-muted-foreground mt-2">
-                    Feels like {weather.feelsLike}°C
+              <div>
+                <div className="text-6xl font-bold mb-2">{weather.temperature}°C</div>
+                <div className="text-xl text-muted-foreground flex items-center gap-2">
+                  <span className="text-3xl">{getWeatherEmoji(weather.condition)}</span>
+                  <div>
+                    <div>{weather.condition}</div>
+                    <div className="text-sm capitalize">{weather.description}</div>
                   </div>
                 </div>
+                <div className="text-muted-foreground mt-2">
+                  Feels like {weather.feelsLike}°C
+                </div>
+              </div>
               </div>
             </Card>
 
@@ -126,17 +149,17 @@ const Dashboard = () => {
               <Card className="p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-center gap-3 mb-2">
                   <Sun className="w-8 h-8 text-secondary" />
-                  <span className="text-muted-foreground">UV Index</span>
+                  <span className="text-muted-foreground">Pressure</span>
                 </div>
-                <div className="text-3xl font-bold">{weather.uvIndex}</div>
+                <div className="text-3xl font-bold">{weather.pressure} hPa</div>
               </Card>
 
               <Card className="p-6 hover:shadow-lg transition-shadow">
                 <div className="flex items-center gap-3 mb-2">
                   <Eye className="w-8 h-8 text-primary" />
-                  <span className="text-muted-foreground">Visibility</span>
+                  <span className="text-muted-foreground">Cloudiness</span>
                 </div>
-                <div className="text-3xl font-bold">{weather.visibility} km</div>
+                <div className="text-3xl font-bold">{weather.cloudiness}%</div>
               </Card>
             </div>
           </>
