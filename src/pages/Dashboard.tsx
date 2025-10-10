@@ -6,9 +6,10 @@ import { Search, MapPin, Droplets, Wind, Sun, Eye, Loader2 } from "lucide-react"
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
 import { supabase } from "@/integrations/supabase/client";
+import { useApp } from "@/contexts/AppContext";
 
 const Dashboard = () => {
-  const [city, setCity] = useState("New York");
+  const { selectedCity, setSelectedCity, convertTemperature, getTempUnit } = useApp();
   const [searchCity, setSearchCity] = useState("");
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
@@ -67,12 +68,12 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchWeather(city);
-  }, [city]);
+    fetchWeather(selectedCity);
+  }, [selectedCity]);
 
   const handleSearch = () => {
     if (searchCity.trim()) {
-      setCity(searchCity);
+      setSelectedCity(searchCity);
       setSearchCity("");
     }
   };
@@ -113,7 +114,9 @@ const Dashboard = () => {
               
               <div className="flex items-center justify-between">
               <div>
-                <div className="text-6xl font-bold mb-2">{weather.temperature}°C</div>
+                <div className="text-6xl font-bold mb-2">
+                  {convertTemperature(weather.temperature)}{getTempUnit()}
+                </div>
                 <div className="text-xl text-muted-foreground flex items-center gap-2">
                   <span className="text-3xl">{getWeatherEmoji(weather.condition)}</span>
                   <div>
@@ -122,7 +125,7 @@ const Dashboard = () => {
                   </div>
                 </div>
                 <div className="text-muted-foreground mt-2">
-                  Feels like {weather.feelsLike}°C
+                  Feels like {convertTemperature(weather.feelsLike)}{getTempUnit()}
                 </div>
               </div>
               </div>

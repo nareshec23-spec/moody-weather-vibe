@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -7,34 +7,14 @@ import { Button } from "@/components/ui/button";
 import Navbar from "@/components/Navbar";
 import { Settings as SettingsIcon, Bell, Globe, Palette } from "lucide-react";
 import { toast } from "sonner";
+import { useApp } from "@/contexts/AppContext";
 
 const Settings = () => {
-  const [temperatureUnit, setTemperatureUnit] = useState("celsius");
-  const [notifications, setNotifications] = useState(true);
-  const [autoLocation, setAutoLocation] = useState(false);
-  const [language, setLanguage] = useState("en");
-
-  // Load settings from localStorage on mount
-  useEffect(() => {
-    const savedSettings = localStorage.getItem('weatherSettings');
-    if (savedSettings) {
-      const settings = JSON.parse(savedSettings);
-      setTemperatureUnit(settings.temperatureUnit || "celsius");
-      setNotifications(settings.notifications ?? true);
-      setAutoLocation(settings.autoLocation ?? false);
-      setLanguage(settings.language || "en");
-    }
-  }, []);
+  const { settings, updateSettings } = useApp();
 
   const handleSave = () => {
-    const settings = {
-      temperatureUnit,
-      notifications,
-      autoLocation,
-      language,
-    };
-    localStorage.setItem('weatherSettings', JSON.stringify(settings));
-    toast.success("Settings saved successfully!");
+    updateSettings(settings);
+    toast.success("Settings saved and applied across the app!");
   };
 
   return (
@@ -57,7 +37,10 @@ const Settings = () => {
             <div className="space-y-4">
               <div>
                 <Label htmlFor="temp-unit" className="text-lg mb-2 block">Temperature Unit</Label>
-                <Select value={temperatureUnit} onValueChange={setTemperatureUnit}>
+                <Select 
+                  value={settings.temperatureUnit} 
+                  onValueChange={(value) => updateSettings({ ...settings, temperatureUnit: value as any })}
+                >
                   <SelectTrigger id="temp-unit">
                     <SelectValue />
                   </SelectTrigger>
@@ -71,7 +54,10 @@ const Settings = () => {
 
               <div>
                 <Label htmlFor="language" className="text-lg mb-2 block">Language</Label>
-                <Select value={language} onValueChange={setLanguage}>
+                <Select 
+                  value={settings.language} 
+                  onValueChange={(value) => updateSettings({ ...settings, language: value })}
+                >
                   <SelectTrigger id="language">
                     <SelectValue />
                   </SelectTrigger>
@@ -101,8 +87,8 @@ const Settings = () => {
                 </div>
                 <Switch 
                   id="notifications" 
-                  checked={notifications}
-                  onCheckedChange={setNotifications}
+                  checked={settings.notifications}
+                  onCheckedChange={(checked) => updateSettings({ ...settings, notifications: checked })}
                 />
               </div>
             </div>
@@ -122,8 +108,8 @@ const Settings = () => {
                 </div>
                 <Switch 
                   id="auto-location" 
-                  checked={autoLocation}
-                  onCheckedChange={setAutoLocation}
+                  checked={settings.autoLocation}
+                  onCheckedChange={(checked) => updateSettings({ ...settings, autoLocation: checked })}
                 />
               </div>
             </div>

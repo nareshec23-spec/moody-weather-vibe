@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import { Search, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useApp } from "@/contexts/AppContext";
 
 interface ForecastDay {
   day: string;
@@ -18,7 +19,7 @@ interface ForecastDay {
 }
 
 const Forecast = () => {
-  const [city, setCity] = useState("New York");
+  const { selectedCity, setSelectedCity, convertTemperature, getTempUnit } = useApp();
   const [searchCity, setSearchCity] = useState("");
   const [forecastData, setForecastData] = useState<ForecastDay[]>([]);
   const [hourlyData, setHourlyData] = useState<any[]>([]);
@@ -102,12 +103,12 @@ const Forecast = () => {
   };
 
   useEffect(() => {
-    fetchForecast(city);
-  }, [city]);
+    fetchForecast(selectedCity);
+  }, [selectedCity]);
 
   const handleSearch = () => {
     if (searchCity.trim()) {
-      setCity(searchCity);
+      setSelectedCity(searchCity);
       setSearchCity("");
     }
   };
@@ -153,11 +154,13 @@ const Forecast = () => {
                 >
                   <h3 className="text-lg font-semibold mb-3">{day.day}</h3>
                   <div className="text-5xl mb-4 text-center">{day.icon}</div>
-                  <div className="text-3xl font-bold text-center mb-2">{day.temp}°C</div>
+                  <div className="text-3xl font-bold text-center mb-2">
+                    {convertTemperature(day.temp)}{getTempUnit()}
+                  </div>
                   <div className="text-muted-foreground text-center mb-3">{day.condition}</div>
                   <div className="flex justify-between text-sm text-muted-foreground">
-                    <span>Min: {day.min}°C</span>
-                    <span>Max: {day.max}°C</span>
+                    <span>Min: {convertTemperature(day.min)}{getTempUnit()}</span>
+                    <span>Max: {convertTemperature(day.max)}{getTempUnit()}</span>
                   </div>
                   <div className="mt-2 text-sm text-center text-muted-foreground">
                     Humidity: {day.humidity}%
@@ -177,7 +180,9 @@ const Forecast = () => {
                         {hour.time.getHours().toString().padStart(2, '0')}:00
                       </div>
                       <div className="text-2xl mb-2">{hour.icon}</div>
-                      <div className="font-semibold">{hour.temp}°</div>
+                      <div className="font-semibold">
+                        {convertTemperature(hour.temp)}{getTempUnit()}
+                      </div>
                     </div>
                   ))}
                 </div>
