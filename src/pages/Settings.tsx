@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
@@ -14,7 +14,26 @@ const Settings = () => {
   const [autoLocation, setAutoLocation] = useState(false);
   const [language, setLanguage] = useState("en");
 
+  // Load settings from localStorage on mount
+  useEffect(() => {
+    const savedSettings = localStorage.getItem('weatherSettings');
+    if (savedSettings) {
+      const settings = JSON.parse(savedSettings);
+      setTemperatureUnit(settings.temperatureUnit || "celsius");
+      setNotifications(settings.notifications ?? true);
+      setAutoLocation(settings.autoLocation ?? false);
+      setLanguage(settings.language || "en");
+    }
+  }, []);
+
   const handleSave = () => {
+    const settings = {
+      temperatureUnit,
+      notifications,
+      autoLocation,
+      language,
+    };
+    localStorage.setItem('weatherSettings', JSON.stringify(settings));
     toast.success("Settings saved successfully!");
   };
 

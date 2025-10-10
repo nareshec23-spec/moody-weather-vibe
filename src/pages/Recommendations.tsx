@@ -1,15 +1,21 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
-import { Shirt, UtensilsCrossed, Heart, Dumbbell, Sun, CloudRain, Snowflake, Cloud } from "lucide-react";
+import { Shirt, UtensilsCrossed, Heart, Dumbbell, Search, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 const Recommendations = () => {
   const [mood, setMood] = useState("energetic");
   const [weather, setWeather] = useState("sunny");
   const [climate, setClimate] = useState("temperate");
+  const [searchCity, setSearchCity] = useState("");
+  const [currentCity, setCurrentCity] = useState("New York");
+  const [loading, setLoading] = useState(false);
 
   const getRecommendations = () => {
     const recommendations = {
@@ -111,6 +117,62 @@ const Recommendations = () => {
     return messages[mood as keyof typeof messages] || messages.happy;
   };
 
+  const fetchWeatherData = async (cityName: string) => {
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.functions.invoke('get-weather', {
+        body: { city: cityName }
+      });
+
+      if (error || !data) {
+        toast.error("Failed to fetch weather data");
+        return;
+      }
+
+      setCurrentCity(data.name);
+      
+      // Auto-detect weather condition
+      const condition = data.weather[0].main.toLowerCase();
+      if (condition.includes('clear') || condition.includes('sun')) {
+        setWeather('sunny');
+      } else if (condition.includes('rain')) {
+        setWeather('rainy');
+      } else if (condition.includes('snow')) {
+        setWeather('snowy');
+      } else {
+        setWeather('cloudy');
+      }
+
+      // Auto-detect climate based on temperature
+      const temp = data.main.temp;
+      if (temp > 25) {
+        setClimate('tropical');
+      } else if (temp < 10) {
+        setClimate('temperate');
+      } else {
+        setClimate('arid');
+      }
+
+      toast.success(`Weather loaded for ${data.name}`);
+    } catch (error) {
+      console.error('Error:', error);
+      toast.error("Failed to fetch weather data");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchWeatherData(currentCity);
+  }, []);
+
+  const handleSearch = () => {
+    if (searchCity.trim()) {
+      fetchWeatherData(searchCity);
+      setSearchCity("");
+    }
+  };
+
   const recs = getRecommendations();
 
   return (
@@ -119,6 +181,29 @@ const Recommendations = () => {
       
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-4xl font-bold mb-8">Personalized Recommendations</h1>
+
+        {/* City Search */}
+        <Card className="p-6 mb-6">
+          <div className="flex gap-4">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
+              <Input
+                placeholder="Search for a city to get recommendations..."
+                value={searchCity}
+                onChange={(e) => setSearchCity(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                className="pl-10"
+                disabled={loading}
+              />
+            </div>
+            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()}>
+              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+            </Button>
+          </div>
+          <p className="text-sm text-muted-foreground mt-2">
+            Current location: <span className="font-semibold text-foreground">{currentCity}</span>
+          </p>
+        </Card>
 
         {/* Mood & Weather Selection */}
         <Card className="p-6 mb-8">
