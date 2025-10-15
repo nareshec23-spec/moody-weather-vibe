@@ -2,9 +2,11 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 interface AppSettings {
   temperatureUnit: "celsius" | "fahrenheit" | "kelvin";
-  notifications: boolean;
-  autoLocation: boolean;
   language: string;
+  windSpeedUnit: "kmh" | "mph" | "ms";
+  pressureUnit: "hpa" | "inhg";
+  timeFormat: "12h" | "24h";
+  theme: "light" | "dark" | "auto";
 }
 
 interface AppContextType {
@@ -22,9 +24,11 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
   const [selectedCity, setSelectedCityState] = useState("New York");
   const [settings, setSettings] = useState<AppSettings>({
     temperatureUnit: "celsius",
-    notifications: true,
-    autoLocation: false,
     language: "en",
+    windSpeedUnit: "kmh",
+    pressureUnit: "hpa",
+    timeFormat: "12h",
+    theme: "auto",
   });
 
   // Load settings and city from localStorage on mount

@@ -117,12 +117,12 @@ const Forecast = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">5-Day Forecast</h1>
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8">5-Day Forecast</h1>
 
         {/* Search Section */}
-        <Card className="p-6 mb-8 shadow-lg">
-          <div className="flex gap-4">
+        <Card className="p-4 md:p-6 mb-6 md:mb-8 shadow-lg">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
@@ -134,7 +134,7 @@ const Forecast = () => {
                 disabled={loading}
               />
             </div>
-            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()}>
+            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()} className="w-full sm:w-auto">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
             </Button>
           </div>
@@ -146,11 +146,11 @@ const Forecast = () => {
           </div>
         ) : (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4 md:gap-6">
               {forecastData.map((day, index) => (
                 <Card 
                   key={index}
-                  className="p-6 hover:shadow-xl transition-all hover:scale-105"
+                  className="p-4 md:p-6 hover:shadow-xl transition-all hover:scale-105"
                 >
                   <h3 className="text-lg font-semibold mb-3">{day.day}</h3>
                   <div className="text-5xl mb-4 text-center">{day.icon}</div>
@@ -171,9 +171,9 @@ const Forecast = () => {
 
             {/* Hourly Forecast */}
             {hourlyData.length > 0 && (
-              <Card className="mt-8 p-6">
-                <h2 className="text-2xl font-bold mb-6">Hourly Forecast</h2>
-                <div className="grid grid-cols-6 md:grid-cols-12 gap-4">
+              <Card className="mt-6 md:mt-8 p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Hourly Forecast</h2>
+                <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-12 gap-3 md:gap-4">
                   {hourlyData.map((hour, i) => (
                     <div key={i} className="text-center">
                       <div className="text-sm text-muted-foreground mb-2">

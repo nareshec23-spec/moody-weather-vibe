@@ -153,12 +153,12 @@ const MultiCity = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Multi-City Weather Comparison</h1>
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8">Multi-City Weather Comparison</h1>
 
         {/* Add City Controls */}
-        <Card className="p-6 mb-8">
-          <div className="flex gap-4">
+        <Card className="p-4 md:p-6 mb-6 md:mb-8">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Input
                 placeholder="Enter city name..."
@@ -168,11 +168,11 @@ const MultiCity = () => {
                 disabled={loading}
               />
             </div>
-            <Button onClick={handleAddCity} disabled={loading || !newCity.trim()}>
+            <Button onClick={handleAddCity} disabled={loading || !newCity.trim()} className="w-full sm:w-auto">
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Plus className="w-4 h-4 mr-2" />}
               Add City
             </Button>
-            <Button onClick={handleRandomCity} disabled={loading} variant="secondary">
+            <Button onClick={handleRandomCity} disabled={loading} variant="secondary" className="w-full sm:w-auto">
               {loading ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Shuffle className="w-4 h-4 mr-2" />}
               Random City
             </Button>
@@ -185,11 +185,11 @@ const MultiCity = () => {
           </div>
         ) : (
           <>
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
               {cities.map((city, index) => (
                 <Card 
                   key={index}
-                  className="p-6 hover:shadow-xl transition-all hover:scale-105 relative"
+                  className="p-4 md:p-6 hover:shadow-xl transition-all hover:scale-105 relative"
                 >
                   <Button
                     variant="ghost"
@@ -238,8 +238,8 @@ const MultiCity = () => {
 
             {/* Comparison Chart */}
             {cities.length > 0 && (
-              <Card className="mt-8 p-6">
-                <h2 className="text-2xl font-bold mb-6">Temperature Comparison</h2>
+              <Card className="mt-6 md:mt-8 p-4 md:p-6">
+                <h2 className="text-xl md:text-2xl font-bold mb-4 md:mb-6">Temperature Comparison</h2>
                 <div className="space-y-4">
                   {cities.map((city, index) => (
                     <div key={index} className="space-y-2">

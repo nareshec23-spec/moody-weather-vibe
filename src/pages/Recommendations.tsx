@@ -179,12 +179,12 @@ const Recommendations = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-8">Personalized Recommendations</h1>
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8">Personalized Recommendations</h1>
 
         {/* City Search */}
-        <Card className="p-6 mb-6">
-          <div className="flex gap-4">
+        <Card className="p-4 md:p-6 mb-4 md:mb-6">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
@@ -196,7 +196,7 @@ const Recommendations = () => {
                 disabled={loading}
               />
             </div>
-            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()}>
+            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()} className="w-full sm:w-auto">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
             </Button>
           </div>
@@ -206,10 +206,10 @@ const Recommendations = () => {
         </Card>
 
         {/* Mood & Weather Selection */}
-        <Card className="p-6 mb-8">
-          <div className="grid md:grid-cols-3 gap-6">
+        <Card className="p-4 md:p-6 mb-6 md:mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
             <div>
-              <Label htmlFor="mood" className="text-lg mb-2 block">Your Mood</Label>
+              <Label htmlFor="mood" className="text-sm md:text-lg mb-2 block">Your Mood</Label>
               <Select value={mood} onValueChange={setMood}>
                 <SelectTrigger id="mood">
                   <SelectValue />
@@ -220,12 +220,27 @@ const Recommendations = () => {
                   <SelectItem value="happy">😊 Happy</SelectItem>
                   <SelectItem value="focused">🎯 Focused</SelectItem>
                   <SelectItem value="adventurous">🚀 Adventurous</SelectItem>
+                  <SelectItem value="creative">🎨 Creative</SelectItem>
+                  <SelectItem value="motivated">💪 Motivated</SelectItem>
+                  <SelectItem value="peaceful">🕊️ Peaceful</SelectItem>
+                  <SelectItem value="social">🎉 Social</SelectItem>
+                  <SelectItem value="contemplative">🤔 Contemplative</SelectItem>
+                  <SelectItem value="playful">🎮 Playful</SelectItem>
+                  <SelectItem value="productive">📊 Productive</SelectItem>
+                  <SelectItem value="romantic">💕 Romantic</SelectItem>
+                  <SelectItem value="nostalgic">📷 Nostalgic</SelectItem>
+                  <SelectItem value="curious">🔍 Curious</SelectItem>
+                  <SelectItem value="cozy">🛋️ Cozy</SelectItem>
+                  <SelectItem value="ambitious">🎯 Ambitious</SelectItem>
+                  <SelectItem value="serene">🧘 Serene</SelectItem>
+                  <SelectItem value="festive">🎊 Festive</SelectItem>
+                  <SelectItem value="introspective">💭 Introspective</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="weather" className="text-lg mb-2 block">Weather Condition</Label>
+              <Label htmlFor="weather" className="text-sm md:text-lg mb-2 block">Weather Condition</Label>
               <Select value={weather} onValueChange={setWeather}>
                 <SelectTrigger id="weather">
                   <SelectValue />
@@ -235,12 +250,23 @@ const Recommendations = () => {
                   <SelectItem value="cloudy">☁️ Cloudy</SelectItem>
                   <SelectItem value="rainy">🌧️ Rainy</SelectItem>
                   <SelectItem value="snowy">❄️ Snowy</SelectItem>
+                  <SelectItem value="windy">💨 Windy</SelectItem>
+                  <SelectItem value="foggy">🌫️ Foggy</SelectItem>
+                  <SelectItem value="stormy">⛈️ Stormy</SelectItem>
+                  <SelectItem value="humid">💧 Humid</SelectItem>
+                  <SelectItem value="clear">🌤️ Clear</SelectItem>
+                  <SelectItem value="partly-cloudy">⛅ Partly Cloudy</SelectItem>
+                  <SelectItem value="drizzle">🌦️ Drizzle</SelectItem>
+                  <SelectItem value="hail">🧊 Hail</SelectItem>
+                  <SelectItem value="sleet">🌨️ Sleet</SelectItem>
+                  <SelectItem value="dusty">🏜️ Dusty</SelectItem>
+                  <SelectItem value="hazy">🌁 Hazy</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div>
-              <Label htmlFor="climate" className="text-lg mb-2 block">Climate Zone</Label>
+              <Label htmlFor="climate" className="text-sm md:text-lg mb-2 block">Climate Zone</Label>
               <Select value={climate} onValueChange={setClimate}>
                 <SelectTrigger id="climate">
                   <SelectValue />
@@ -249,73 +275,80 @@ const Recommendations = () => {
                   <SelectItem value="tropical">🌴 Tropical</SelectItem>
                   <SelectItem value="temperate">🍂 Temperate</SelectItem>
                   <SelectItem value="arid">🏜️ Arid/Desert</SelectItem>
+                  <SelectItem value="mediterranean">🌊 Mediterranean</SelectItem>
+                  <SelectItem value="continental">❄️ Continental</SelectItem>
+                  <SelectItem value="polar">🧊 Polar</SelectItem>
+                  <SelectItem value="subtropical">🌺 Subtropical</SelectItem>
+                  <SelectItem value="oceanic">🌊 Oceanic</SelectItem>
+                  <SelectItem value="savanna">🦁 Savanna</SelectItem>
+                  <SelectItem value="alpine">⛰️ Alpine</SelectItem>
                 </SelectContent>
               </Select>
             </div>
           </div>
 
-          <div className="mt-6 p-4 bg-primary/10 rounded-lg">
-            <p className="text-lg font-medium text-center">{getMoodMessage()}</p>
+          <div className="mt-4 md:mt-6 p-3 md:p-4 bg-primary/10 rounded-lg">
+            <p className="text-base md:text-lg font-medium text-center">{getMoodMessage()}</p>
           </div>
         </Card>
 
         {/* Recommendations Grid */}
-        <div className="grid md:grid-cols-2 gap-6">
-          <Card className="p-6 hover:shadow-xl transition-all">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
+          <Card className="p-4 md:p-6 hover:shadow-xl transition-all">
             <div className="flex items-center gap-3 mb-4">
-              <Shirt className="w-8 h-8 text-primary" />
-              <h2 className="text-2xl font-bold">Clothing</h2>
+              <Shirt className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Clothing</h2>
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-2 md:space-y-3">
               {recs.clothing.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span className="text-lg">{item}</span>
+                  <span className="text-sm md:text-lg">{item}</span>
                 </li>
               ))}
             </ul>
           </Card>
 
-          <Card className="p-6 hover:shadow-xl transition-all">
+          <Card className="p-4 md:p-6 hover:shadow-xl transition-all">
             <div className="flex items-center gap-3 mb-4">
-              <Dumbbell className="w-8 h-8 text-secondary" />
-              <h2 className="text-2xl font-bold">Activities</h2>
+              <Dumbbell className="w-6 h-6 md:w-8 md:h-8 text-secondary" />
+              <h2 className="text-xl md:text-2xl font-bold">Activities</h2>
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-2 md:space-y-3">
               {recs.activities.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="text-secondary mt-1">•</span>
-                  <span className="text-lg">{item}</span>
+                  <span className="text-sm md:text-lg">{item}</span>
                 </li>
               ))}
             </ul>
           </Card>
 
-          <Card className="p-6 hover:shadow-xl transition-all">
+          <Card className="p-4 md:p-6 hover:shadow-xl transition-all">
             <div className="flex items-center gap-3 mb-4">
-              <UtensilsCrossed className="w-8 h-8 text-primary" />
-              <h2 className="text-2xl font-bold">Beverages</h2>
+              <UtensilsCrossed className="w-6 h-6 md:w-8 md:h-8 text-primary" />
+              <h2 className="text-xl md:text-2xl font-bold">Beverages</h2>
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-2 md:space-y-3">
               {recs.drinks.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="text-primary mt-1">•</span>
-                  <span className="text-lg">{item}</span>
+                  <span className="text-sm md:text-lg">{item}</span>
                 </li>
               ))}
             </ul>
           </Card>
 
-          <Card className="p-6 hover:shadow-xl transition-all">
+          <Card className="p-4 md:p-6 hover:shadow-xl transition-all">
             <div className="flex items-center gap-3 mb-4">
-              <Heart className="w-8 h-8 text-secondary" />
-              <h2 className="text-2xl font-bold">Health & Comfort</h2>
+              <Heart className="w-6 h-6 md:w-8 md:h-8 text-secondary" />
+              <h2 className="text-xl md:text-2xl font-bold">Health & Comfort</h2>
             </div>
-            <ul className="space-y-3">
+            <ul className="space-y-2 md:space-y-3">
               {recs.health.map((item, i) => (
                 <li key={i} className="flex items-start gap-2">
                   <span className="text-secondary mt-1">•</span>
-                  <span className="text-lg">{item}</span>
+                  <span className="text-sm md:text-lg">{item}</span>
                 </li>
               ))}
             </ul>

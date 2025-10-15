@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Search, MapPin, Droplets, Wind, Sun, Eye, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
+import VoiceAssistant from "@/components/VoiceAssistant";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
@@ -82,10 +83,17 @@ const Dashboard = () => {
     <div className="min-h-screen bg-background">
       <Navbar />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-6 md:py-8">
+        <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8">Weather Dashboard</h1>
+        
+        {/* Voice Assistant */}
+        <div className="mb-6 md:mb-8">
+          <VoiceAssistant />
+        </div>
+
         {/* Search Section */}
-        <Card className="p-6 mb-8 shadow-lg">
-          <div className="flex gap-4">
+        <Card className="p-4 md:p-6 mb-6 md:mb-8 shadow-lg">
+          <div className="flex flex-col sm:flex-row gap-4">
             <div className="relative flex-1">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5" />
               <Input
@@ -97,7 +105,7 @@ const Dashboard = () => {
                 disabled={loading}
               />
             </div>
-            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()}>
+            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()} className="w-full sm:w-auto">
               {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
             </Button>
           </div>
