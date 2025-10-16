@@ -6,12 +6,14 @@ import Navbar from "@/components/Navbar";
 import { Settings as SettingsIcon, Palette, Globe, Wind, Gauge } from "lucide-react";
 import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
+import { useState } from "react";
 
 const Settings = () => {
   const { settings, updateSettings } = useApp();
+  const [localSettings, setLocalSettings] = useState(settings);
 
   const handleSave = () => {
-    // Settings are already being updated in real-time via updateSettings
+    updateSettings(localSettings);
     toast.success("Settings applied successfully!");
   };
 
@@ -36,8 +38,8 @@ const Settings = () => {
               <div>
                 <Label htmlFor="temp-unit" className="text-sm md:text-lg mb-2 block">Temperature Unit</Label>
                 <Select 
-                  value={settings.temperatureUnit} 
-                  onValueChange={(value) => updateSettings({ ...settings, temperatureUnit: value as any })}
+                  value={localSettings.temperatureUnit} 
+                  onValueChange={(value) => setLocalSettings({ ...localSettings, temperatureUnit: value as any })}
                 >
                   <SelectTrigger id="temp-unit">
                     <SelectValue />
@@ -53,8 +55,8 @@ const Settings = () => {
               <div>
                 <Label htmlFor="wind-unit" className="text-sm md:text-lg mb-2 block">Wind Speed Unit</Label>
                 <Select 
-                  value={settings.windSpeedUnit} 
-                  onValueChange={(value) => updateSettings({ ...settings, windSpeedUnit: value as any })}
+                  value={localSettings.windSpeedUnit} 
+                  onValueChange={(value) => setLocalSettings({ ...localSettings, windSpeedUnit: value as any })}
                 >
                   <SelectTrigger id="wind-unit">
                     <SelectValue />
@@ -70,8 +72,8 @@ const Settings = () => {
               <div>
                 <Label htmlFor="pressure-unit" className="text-sm md:text-lg mb-2 block">Pressure Unit</Label>
                 <Select 
-                  value={settings.pressureUnit} 
-                  onValueChange={(value) => updateSettings({ ...settings, pressureUnit: value as any })}
+                  value={localSettings.pressureUnit} 
+                  onValueChange={(value) => setLocalSettings({ ...localSettings, pressureUnit: value as any })}
                 >
                   <SelectTrigger id="pressure-unit">
                     <SelectValue />
@@ -86,8 +88,8 @@ const Settings = () => {
               <div>
                 <Label htmlFor="time-format" className="text-sm md:text-lg mb-2 block">Time Format</Label>
                 <Select 
-                  value={settings.timeFormat} 
-                  onValueChange={(value) => updateSettings({ ...settings, timeFormat: value as any })}
+                  value={localSettings.timeFormat} 
+                  onValueChange={(value) => setLocalSettings({ ...localSettings, timeFormat: value as any })}
                 >
                   <SelectTrigger id="time-format">
                     <SelectValue />
@@ -110,8 +112,8 @@ const Settings = () => {
             <div>
               <Label htmlFor="language" className="text-sm md:text-lg mb-2 block">Language</Label>
               <Select 
-                value={settings.language} 
-                onValueChange={(value) => updateSettings({ ...settings, language: value })}
+                value={localSettings.language} 
+                onValueChange={(value) => setLocalSettings({ ...localSettings, language: value })}
               >
                 <SelectTrigger id="language">
                   <SelectValue />
@@ -135,7 +137,7 @@ const Settings = () => {
                 </SelectContent>
               </Select>
               <p className="text-xs md:text-sm text-muted-foreground mt-2">
-                Selected: {settings.language.toUpperCase()} • More languages coming soon
+                Selected: {localSettings.language.toUpperCase()} • More languages coming soon
               </p>
             </div>
           </Card>
@@ -149,8 +151,8 @@ const Settings = () => {
             <div>
               <Label htmlFor="theme" className="text-sm md:text-lg mb-2 block">Theme</Label>
               <Select 
-                value={settings.theme} 
-                onValueChange={(value) => updateSettings({ ...settings, theme: value as any })}
+                value={localSettings.theme} 
+                onValueChange={(value) => setLocalSettings({ ...localSettings, theme: value as any })}
               >
                 <SelectTrigger id="theme">
                   <SelectValue />
