@@ -7,16 +7,81 @@ import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
 
 const VoiceAssistant = () => {
-  const { selectedCity, setSelectedCity } = useApp();
+  const { selectedCity, setSelectedCity, settings } = useApp();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
   const [response, setResponse] = useState("");
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recognitionRef = useRef<any>(null);
 
   const startRecording = async () => {
     try {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      if (SpeechRecognition) {
+        const recognition = new SpeechRecognition();
+        recognition.lang = (settings?.language || 'en').toString();
+        recognition.interimResults = false;
+        recognition.maxAlternatives = 1;
+
+        recognition.onstart = () => {
+          setIsRecording(true);
+          toast.success("Listening...");
+        };
+        recognition.onerror = (e: any) => {
+          console.error('Speech recognition error:', e);
+          setIsRecording(false);
+          toast.error("Voice recognition error");
+        };
+        recognition.onend = () => {
+          setIsRecording(false);
+        };
+        recognition.onresult = async (event: any) => {
+          try {
+            const said = event.results?.[0]?.[0]?.transcript || '';
+            setTranscript(said);
+
+            const lower = said.toLowerCase().trim();
+            const keywordOrder = ['weather in', 'weather for', 'in'];
+            let candidate = lower;
+            for (const k of keywordOrder) {
+              if (candidate.includes(k)) {
+                const after = candidate.split(k)[1]?.trim();
+                if (after) {
+                  candidate = after;
+                  break;
+                }
+              }
+            }
+            candidate = candidate
+              .replace(/^(what's|what is|show me|how is|the|city|today|now)\s+/g, '')
+              .replace(/[.,!?]/g, '')
+              .trim();
+            const firstToken = candidate.split(/\s+/)[0];
+            const city = firstToken
+              ? firstToken.charAt(0).toUpperCase() + firstToken.slice(1)
+              : '';
+
+            if (city) {
+              setSelectedCity(city);
+              setResponse(`Showing weather for ${city}`);
+              toast.success(`Searching weather for ${city}`);
+            } else {
+              setResponse("I couldn't detect a city. Try 'Weather in London'.");
+            }
+          } catch (err) {
+            console.error('onresult error:', err);
+            toast.error('Failed to process speech');
+          }
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+        return;
+      }
+
+      // Fallback: legacy MediaRecorder + server transcription
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       const mediaRecorder = new MediaRecorder(stream);
       mediaRecorderRef.current = mediaRecorder;
@@ -44,6 +109,11 @@ const VoiceAssistant = () => {
   };
 
   const stopRecording = () => {
+    if (recognitionRef.current && isRecording) {
+      try { recognitionRef.current.stop(); } catch {}
+      setIsRecording(false);
+      return;
+    }
     if (mediaRecorderRef.current && isRecording) {
       mediaRecorderRef.current.stop();
       setIsRecording(false);
