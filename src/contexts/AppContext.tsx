@@ -44,6 +44,24 @@ export const AppProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  // Apply theme changes
+  useEffect(() => {
+    const root = document.documentElement;
+    if (settings.theme === 'dark') {
+      root.classList.add('dark');
+    } else if (settings.theme === 'light') {
+      root.classList.remove('dark');
+    } else {
+      // Auto mode - check system preference
+      const isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      if (isDark) {
+        root.classList.add('dark');
+      } else {
+        root.classList.remove('dark');
+      }
+    }
+  }, [settings.theme]);
+
   const setSelectedCity = (city: string) => {
     setSelectedCityState(city);
     localStorage.setItem('selectedCity', city);

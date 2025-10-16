@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { useApp } from "@/contexts/AppContext";
 
 const VoiceAssistant = () => {
-  const { selectedCity } = useApp();
+  const { selectedCity, setSelectedCity } = useApp();
   const [isRecording, setIsRecording] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [transcript, setTranscript] = useState("");
@@ -73,28 +73,52 @@ const VoiceAssistant = () => {
 
         setTranscript(transcriptData.text);
 
-        const { data: chatData, error: chatError } = await supabase.functions.invoke('weather-chat', {
-          body: { message: transcriptData.text, city: selectedCity }
-        });
-
-        if (chatError || !chatData) {
-          throw new Error('Failed to get AI response');
-        }
-
-        setResponse(chatData.response);
-
-        const { data: ttsData, error: ttsError } = await supabase.functions.invoke('text-to-voice', {
-          body: { text: chatData.response, voice: 'alloy' }
-        });
-
-        if (ttsError || !ttsData) {
-          throw new Error('Failed to generate speech');
-        }
-
-        const audio = new Audio(`data:audio/mp3;base64,${ttsData.audioContent}`);
-        audio.play();
+        // Check if the transcript contains a city name to search for
+        const cityKeywords = ['weather in', 'weather for', 'show me', 'what is the weather in', 'how is the weather in'];
+        const lowerTranscript = transcriptData.text.toLowerCase();
         
-        toast.success("Response ready!");
+        let detectedCity = null;
+        for (const keyword of cityKeywords) {
+          if (lowerTranscript.includes(keyword)) {
+            const afterKeyword = lowerTranscript.split(keyword)[1];
+            if (afterKeyword) {
+              detectedCity = afterKeyword.trim().split(/[,.\s]/)[0];
+              detectedCity = detectedCity.charAt(0).toUpperCase() + detectedCity.slice(1);
+              break;
+            }
+          }
+        }
+
+        // If we detected a city, update the selected city
+        if (detectedCity) {
+          setSelectedCity(detectedCity);
+          setResponse(`Showing weather for ${detectedCity}`);
+          toast.success(`Searching weather for ${detectedCity}`);
+        } else {
+          // Otherwise, get AI response about the weather
+          const { data: chatData, error: chatError } = await supabase.functions.invoke('weather-chat', {
+            body: { message: transcriptData.text, city: selectedCity }
+          });
+
+          if (chatError || !chatData) {
+            throw new Error('Failed to get AI response');
+          }
+
+          setResponse(chatData.response);
+
+          const { data: ttsData, error: ttsError } = await supabase.functions.invoke('text-to-voice', {
+            body: { text: chatData.response, voice: 'alloy' }
+          });
+
+          if (ttsError || !ttsData) {
+            throw new Error('Failed to generate speech');
+          }
+
+          const audio = new Audio(`data:audio/mp3;base64,${ttsData.audioContent}`);
+          audio.play();
+          
+          toast.success("Response ready!");
+        }
       };
     } catch (error) {
       console.error('Error processing audio:', error);
@@ -144,7 +168,11 @@ const VoiceAssistant = () => {
         )}
 
         <p className="text-xs md:text-sm text-muted-foreground text-center">
-          {isRecording ? "Recording... Click to stop" : isProcessing ? "Processing..." : "Click to ask about weather"}
+          {isRecording ? "Recording... Click to stop" : isProcessing ? "Processing..." : "Click and say a city name or ask about weather"}
+        </p>
+        
+        <p className="text-xs text-muted-foreground text-center mt-2">
+          Try: "Weather in London" or "What's the weather like?"
         </p>
       </div>
     </Card>

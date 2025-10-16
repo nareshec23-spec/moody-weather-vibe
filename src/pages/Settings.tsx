@@ -11,8 +11,8 @@ const Settings = () => {
   const { settings, updateSettings } = useApp();
 
   const handleSave = () => {
-    updateSettings(settings);
-    toast.success("Settings saved successfully!");
+    // Settings are already being updated in real-time via updateSettings
+    toast.success("Settings applied successfully!");
   };
 
   return (
