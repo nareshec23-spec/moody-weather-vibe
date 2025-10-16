@@ -1,19 +1,20 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Search, MapPin, Droplets, Wind, Sun, Eye, Loader2 } from "lucide-react";
+import { Search, MapPin, Droplets, Wind, Sun, Eye, Loader2, Mic } from "lucide-react";
 import { toast } from "sonner";
 import Navbar from "@/components/Navbar";
-import VoiceAssistant from "@/components/VoiceAssistant";
 import { supabase } from "@/integrations/supabase/client";
 import { useApp } from "@/contexts/AppContext";
 
 const Dashboard = () => {
-  const { selectedCity, setSelectedCity, convertTemperature, getTempUnit } = useApp();
+  const { selectedCity, setSelectedCity, convertTemperature, getTempUnit, settings } = useApp();
   const [searchCity, setSearchCity] = useState("");
   const [weather, setWeather] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef<any>(null);
 
   const getWeatherEmoji = (condition: string) => {
     const lower = condition.toLowerCase();
@@ -79,17 +80,86 @@ const Dashboard = () => {
     }
   };
 
+  const startVoiceSearch = () => {
+    try {
+      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      
+      if (!SpeechRecognition) {
+        toast.error("Voice search is not supported in your browser");
+        return;
+      }
+
+      const recognition = new SpeechRecognition();
+      recognition.lang = settings?.language || 'en';
+      recognition.interimResults = false;
+      recognition.maxAlternatives = 1;
+
+      recognition.onstart = () => {
+        setIsListening(true);
+        toast.success("Listening... Say a city name");
+      };
+
+      recognition.onerror = (e: any) => {
+        console.error('Voice search error:', e);
+        setIsListening(false);
+        toast.error("Voice recognition failed");
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.onresult = (event: any) => {
+        try {
+          const transcript = event.results?.[0]?.[0]?.transcript || '';
+          const lower = transcript.toLowerCase().trim();
+          
+          // Extract city name from various patterns
+          let cityName = lower;
+          const patterns = ['weather in', 'weather for', 'show me', 'search for', 'find'];
+          
+          for (const pattern of patterns) {
+            if (cityName.includes(pattern)) {
+              cityName = cityName.split(pattern)[1]?.trim() || cityName;
+              break;
+            }
+          }
+          
+          // Clean up the city name
+          cityName = cityName
+            .replace(/^(the|city|of|in|for|weather|today|now)\s+/gi, '')
+            .replace(/[.,!?]/g, '')
+            .trim();
+          
+          // Capitalize first letter
+          const finalCity = cityName.charAt(0).toUpperCase() + cityName.slice(1);
+          
+          if (finalCity) {
+            setSelectedCity(finalCity);
+            toast.success(`Searching weather for ${finalCity}`);
+          } else {
+            toast.error("Couldn't detect city name. Try again.");
+          }
+        } catch (err) {
+          console.error('Voice processing error:', err);
+          toast.error('Failed to process voice input');
+        }
+      };
+
+      recognitionRef.current = recognition;
+      recognition.start();
+    } catch (error) {
+      console.error('Voice search error:', error);
+      toast.error("Failed to start voice search");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
       
       <div className="container mx-auto px-4 py-6 md:py-8">
         <h1 className="text-3xl md:text-4xl font-bold mb-6 md:mb-8">Weather Dashboard</h1>
-        
-        {/* Voice Assistant */}
-        <div className="mb-6 md:mb-8">
-          <VoiceAssistant />
-        </div>
 
         {/* Search Section */}
         <Card className="p-4 md:p-6 mb-6 md:mb-8 shadow-lg">
@@ -105,9 +175,20 @@ const Dashboard = () => {
                 disabled={loading}
               />
             </div>
-            <Button onClick={handleSearch} disabled={loading || !searchCity.trim()} className="w-full sm:w-auto">
-              {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
-            </Button>
+            <div className="flex gap-2">
+              <Button 
+                variant="outline" 
+                size="icon"
+                onClick={startVoiceSearch} 
+                disabled={loading || isListening}
+                className="shrink-0"
+              >
+                <Mic className={`w-4 h-4 ${isListening ? 'text-primary animate-pulse' : ''}`} />
+              </Button>
+              <Button onClick={handleSearch} disabled={loading || !searchCity.trim()} className="w-full sm:w-auto">
+                {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Search'}
+              </Button>
+            </div>
           </div>
         </Card>
 
