@@ -28,22 +28,24 @@ const Navbar = () => {
             </span>
           </Link>
           
-          <div className="hidden md:flex items-center gap-2">
-            {navItems.map((item) => {
-              const Icon = item.icon;
-              const isActive = location.pathname === item.path;
-              return (
-                <Link key={item.path} to={item.path}>
-                  <Button
-                    variant={isActive ? "default" : "ghost"}
-                    className="gap-2"
-                  >
-                    <Icon className="w-4 h-4" />
-                    <span>{item.label}</span>
-                  </Button>
-                </Link>
-              );
-            })}
+          <div className="hidden md:flex items-center gap-2 overflow-x-auto max-w-3xl scrollbar-hide">
+            <div className="flex items-center gap-2 min-w-max">
+              {navItems.map((item) => {
+                const Icon = item.icon;
+                const isActive = location.pathname === item.path;
+                return (
+                  <Link key={item.path} to={item.path}>
+                    <Button
+                      variant={isActive ? "default" : "ghost"}
+                      className="gap-2 whitespace-nowrap"
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{item.label}</span>
+                    </Button>
+                  </Link>
+                );
+              })}
+            </div>
           </div>
 
           <div className="md:hidden">

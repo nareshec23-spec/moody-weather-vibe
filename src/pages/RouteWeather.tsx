@@ -2,13 +2,14 @@ import { useState, useEffect, useRef } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-import { Cloud, CloudRain, Sun, CloudSnow, Navigation } from 'lucide-react';
+import { Cloud, CloudRain, Sun, CloudSnow, Navigation, Info } from 'lucide-react';
 
 // Fix for default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -247,9 +248,19 @@ const RouteWeather = () => {
               value={destination}
               onChange={(e) => setDestination(e.target.value)}
             />
-            <Button onClick={planRoute} disabled={isLoading}>
-              {isLoading ? 'Planning...' : 'Plan Route'}
-            </Button>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={planRoute} disabled={isLoading} className="gap-2">
+                    <Info className="h-4 w-4" />
+                    {isLoading ? 'Planning...' : 'Plan Route'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>Enter your starting point and destination to see weather conditions along your route. We'll show you which areas have rain, clear skies, or clouds to help plan your journey!</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
 
           {weatherPoints.length > 0 && (
