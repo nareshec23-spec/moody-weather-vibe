@@ -37,6 +37,7 @@ const RouteWeather = () => {
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [weatherPoints, setWeatherPoints] = useState<WeatherPoint[]>([]);
+  const [routeDistance, setRouteDistance] = useState<number>(0);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -127,6 +128,7 @@ const RouteWeather = () => {
 
     setIsLoading(true);
     setWeatherPoints([]);
+    setRouteDistance(0);
 
     // Clear previous route and markers
     if (routingControlRef.current) {
@@ -166,10 +168,13 @@ const RouteWeather = () => {
       routingControl.on('routesfound', async (e: any) => {
         const route = e.routes[0];
         const coordinates = route.coordinates;
+        const distanceInKm = (route.summary.totalDistance / 1000).toFixed(1);
+        setRouteDistance(parseFloat(distanceInKm));
         
-        // Sample points along the route (every ~30km)
+        // Sample points along the route (every ~30km to avoid duplicates)
         const sampledPoints: L.LatLng[] = [];
-        const stepSize = Math.ceil(coordinates.length / 8); // Get about 8 points
+        const totalPoints = Math.min(6, Math.ceil(coordinates.length / 20)); // Max 6 points
+        const stepSize = Math.floor(coordinates.length / totalPoints);
         
         for (let i = 0; i < coordinates.length; i += stepSize) {
           sampledPoints.push(coordinates[i]);
@@ -183,10 +188,15 @@ const RouteWeather = () => {
         const weatherData = await Promise.all(weatherPromises);
         const validWeather = weatherData.filter((w): w is WeatherPoint => w !== null);
         
-        setWeatherPoints(validWeather);
+        // Remove duplicates based on city name
+        const uniqueWeather = validWeather.filter((weather, index, self) =>
+          index === self.findIndex((w) => w.city === weather.city)
+        );
+        
+        setWeatherPoints(uniqueWeather);
 
         // Add weather markers
-        validWeather.forEach(weather => {
+        uniqueWeather.forEach(weather => {
           const WeatherIcon = getWeatherIcon(weather.weather);
           
           const icon = L.divIcon({
@@ -212,7 +222,7 @@ const RouteWeather = () => {
 
         toast({
           title: 'Route Planned',
-          description: `Weather conditions loaded for ${validWeather.length} points along your route`
+          description: `${distanceInKm} km route with weather data for ${uniqueWeather.length} locations`
         });
       });
 
@@ -264,23 +274,33 @@ const RouteWeather = () => {
           </div>
 
           {weatherPoints.length > 0 && (
-            <div className="mb-4 p-4 bg-blue-50 dark:bg-gray-800 rounded-lg">
-              <h3 className="font-semibold mb-2">Weather Along Route:</h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
-                {weatherPoints.map((point, idx) => {
-                  const Icon = getWeatherIcon(point.weather);
-                  return (
-                    <div key={idx} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-700 rounded">
-                      <Icon className="h-4 w-4" />
-                      <div>
-                        <div className="font-medium">{point.city}</div>
-                        <div className="text-xs text-muted-foreground">{point.temp}°C - {point.weather}</div>
+            <>
+              <div className="mb-4 p-4 bg-blue-50 dark:bg-gray-800 rounded-lg border-2 border-blue-200 dark:border-blue-700">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-lg">Route Summary</h3>
+                  <div className="text-2xl font-bold text-primary">{routeDistance} km</div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {weatherPoints.some(p => p.weather === 'Rain') 
+                    ? '⚠️ Rain expected on this route. Consider carrying an umbrella or planning for delays.' 
+                    : '✓ Clear conditions expected. Safe travels!'}
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                  {weatherPoints.map((point, idx) => {
+                    const Icon = getWeatherIcon(point.weather);
+                    return (
+                      <div key={idx} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-700 rounded">
+                        <Icon className="h-4 w-4" />
+                        <div>
+                          <div className="font-medium">{point.city}</div>
+                          <div className="text-xs text-muted-foreground">{point.temp}°C - {point.weather}</div>
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
-            </div>
+            </>
           )}
 
           <div ref={mapContainerRef} className="w-full h-[600px] rounded-lg overflow-hidden shadow-lg" />
