@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Cloud, Home, Calendar, Heart, Map, Settings, Menu, X } from "lucide-react";
+import { Cloud, Home, Calendar, Heart, Map, Settings, Menu, X, Navigation } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -13,6 +13,7 @@ const Navbar = () => {
     { path: "/forecast", icon: Calendar, label: "Forecast" },
     { path: "/recommendations", icon: Heart, label: "Recommendations" },
     { path: "/cities", icon: Map, label: "Multi-City" },
+    { path: "/route-weather", icon: Navigation, label: "Route Weather" },
     { path: "/settings", icon: Settings, label: "Settings" },
   ];
 

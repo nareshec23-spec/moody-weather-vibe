@@ -9,6 +9,7 @@ import Dashboard from "./pages/Dashboard";
 import Forecast from "./pages/Forecast";
 import Recommendations from "./pages/Recommendations";
 import MultiCity from "./pages/MultiCity";
+import RouteWeather from "./pages/RouteWeather";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
@@ -27,6 +28,7 @@ const App = () => (
             <Route path="/forecast" element={<Forecast />} />
             <Route path="/recommendations" element={<Recommendations />} />
             <Route path="/cities" element={<MultiCity />} />
+            <Route path="/route-weather" element={<RouteWeather />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
