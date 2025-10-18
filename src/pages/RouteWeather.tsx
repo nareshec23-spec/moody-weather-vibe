@@ -280,8 +280,60 @@ const RouteWeather = () => {
 
         <Card className="p-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
-...
+            <Input
+              placeholder="Origin (e.g., Karur)"
+              value={origin}
+              onChange={(e) => setOrigin(e.target.value)}
+            />
+            <Input
+              placeholder="Destination (e.g., Salem)"
+              value={destination}
+              onChange={(e) => setDestination(e.target.value)}
+            />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button onClick={planRoute} disabled={isLoading} className="gap-2">
+                    <Info className="h-4 w-4" />
+                    {isLoading ? 'Planning...' : 'Plan Route'}
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="max-w-xs">
+                  <p>Enter your starting point and destination to see weather conditions along your route. We'll show you which areas have rain, clear skies, or clouds to help plan your journey!</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
+
+          {weatherPoints.length > 0 && (
+            <>
+              <div className="mb-4 p-4 bg-blue-50 dark:bg-gray-800 rounded-lg border-2 border-blue-200 dark:border-blue-700">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-semibold text-lg">Route Summary</h3>
+                  <div className="text-2xl font-bold text-primary">{routeDistance} km</div>
+                </div>
+                <p className="text-sm text-muted-foreground mb-3">
+                  {weatherPoints.some(p => p.weather === 'Rain') 
+                    ? '⚠️ Rain expected on this route. Consider carrying an umbrella or planning for delays.' 
+                    : '✓ Clear conditions expected. Safe travels!'}
+                </p>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-sm">
+                  {weatherPoints.map((point, idx) => {
+                    const Icon = getWeatherIcon(point.weather);
+                    return (
+                      <div key={idx} className="flex items-center gap-2 p-2 bg-white dark:bg-gray-700 rounded">
+                        <Icon className="h-4 w-4" />
+                        <div>
+                          <div className="font-medium">{point.city}</div>
+                          <div className="text-xs text-muted-foreground">{point.temp}°C - {point.weather}</div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
 
           <div ref={mapContainerRef} className="w-full h-[600px] rounded-lg overflow-hidden shadow-lg" />
         </Card>

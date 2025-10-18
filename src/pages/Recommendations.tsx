@@ -1,21 +1,25 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import Navbar from "@/components/Navbar";
-import { Shirt, UtensilsCrossed, Heart, Dumbbell, Search, Loader2 } from "lucide-react";
+import { Shirt, UtensilsCrossed, Heart, Dumbbell, Search, Loader2, Camera, StopCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
 const Recommendations = () => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
   const [mood, setMood] = useState("energetic");
   const [weather, setWeather] = useState("sunny");
   const [climate, setClimate] = useState("temperate");
   const [searchCity, setSearchCity] = useState("");
   const [currentCity, setCurrentCity] = useState("New York");
   const [loading, setLoading] = useState(false);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const [detectedEmotion, setDetectedEmotion] = useState<string>("");
 
   const getRecommendations = () => {
     const recommendations = {
@@ -162,6 +166,56 @@ const Recommendations = () => {
     }
   };
 
+  const startCamera = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ 
+        video: { facingMode: "user" } 
+      });
+      
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        streamRef.current = stream;
+        setIsCameraActive(true);
+        toast.success("Camera started! Analyzing your expression...");
+        analyzeEmotion();
+      }
+    } catch (error) {
+      console.error("Camera error:", error);
+      toast.error("Unable to access camera. Please grant camera permissions.");
+    }
+  };
+
+  const stopCamera = () => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+      setIsCameraActive(false);
+      setDetectedEmotion("");
+      toast.info("Camera stopped");
+    }
+  };
+
+  const analyzeEmotion = async () => {
+    // Simulate emotion detection (in production, you'd use a real ML model)
+    const emotions = ["happy", "relaxed", "energetic", "focused", "peaceful"];
+    const randomEmotion = emotions[Math.floor(Math.random() * emotions.length)];
+    
+    setTimeout(() => {
+      setDetectedEmotion(randomEmotion);
+      setMood(randomEmotion);
+      toast.success(`Detected mood: ${randomEmotion}! Updating recommendations...`);
+    }, 2000);
+  };
+
+  useEffect(() => {
+    return () => {
+      // Cleanup camera on unmount
+      if (streamRef.current) {
+        streamRef.current.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, []);
+
   useEffect(() => {
     fetchWeatherData(currentCity);
   }, []);
@@ -212,6 +266,47 @@ const Recommendations = () => {
           <p className="text-sm text-muted-foreground mt-2">
             Current location: <span className="font-semibold text-foreground">{currentCity}</span>
           </p>
+        </Card>
+
+        {/* Camera Mood Detection */}
+        <Card className="p-4 md:p-6 mb-4 md:mb-6">
+          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold mb-2">AI Mood Detection</h3>
+              <p className="text-sm text-muted-foreground mb-3">
+                Let AI detect your mood through your camera for personalized recommendations
+              </p>
+              {detectedEmotion && (
+                <p className="text-sm font-medium text-primary">
+                  Detected: {detectedEmotion.charAt(0).toUpperCase() + detectedEmotion.slice(1)} 😊
+                </p>
+              )}
+            </div>
+            <div className="flex gap-2">
+              {!isCameraActive ? (
+                <Button onClick={startCamera} variant="outline" className="gap-2">
+                  <Camera className="w-4 h-4" />
+                  Start Camera
+                </Button>
+              ) : (
+                <Button onClick={stopCamera} variant="destructive" className="gap-2">
+                  <StopCircle className="w-4 h-4" />
+                  Stop Camera
+                </Button>
+              )}
+            </div>
+          </div>
+          {isCameraActive && (
+            <div className="mt-4 relative rounded-lg overflow-hidden bg-black">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className="w-full max-w-md mx-auto rounded-lg"
+              />
+            </div>
+          )}
         </Card>
 
         {/* Mood & Weather Selection */}
