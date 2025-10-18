@@ -5,11 +5,12 @@ import { Input } from '@/components/ui/input';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-routing-machine';
 import 'leaflet-routing-machine/dist/leaflet-routing-machine.css';
-import { Cloud, CloudRain, Sun, CloudSnow, Navigation, Info } from 'lucide-react';
+import { Cloud, CloudRain, Sun, CloudSnow, Navigation, Info, ArrowLeft } from 'lucide-react';
 
 // Fix for default markers
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -29,6 +30,7 @@ interface WeatherPoint {
 }
 
 const RouteWeather = () => {
+  const navigate = useNavigate();
   const mapRef = useRef<L.Map | null>(null);
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const routingControlRef = useRef<any>(null);
@@ -138,27 +140,48 @@ const RouteWeather = () => {
     weatherMarkersRef.current = [];
 
     try {
-      // Geocode origin and destination
-      const originGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(origin)}`);
+      // Geocode origin and destination with better search parameters
+      const originGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(origin)}&limit=5&addressdetails=1`);
       const originData = await originGeo.json();
       
-      const destGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destination)}`);
+      await new Promise(resolve => setTimeout(resolve, 1000)); // Rate limiting
+      
+      const destGeo = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(destination)}&limit=5&addressdetails=1`);
       const destData = await destGeo.json();
 
-      if (!originData[0] || !destData[0]) {
-        throw new Error('Location not found');
+      if (!originData || originData.length === 0) {
+        throw new Error(`Origin location "${origin}" not found. Please try a different city name.`);
+      }
+      
+      if (!destData || destData.length === 0) {
+        throw new Error(`Destination location "${destination}" not found. Please try a different city name.`);
       }
 
       const originLatLng = L.latLng(parseFloat(originData[0].lat), parseFloat(originData[0].lon));
       const destLatLng = L.latLng(parseFloat(destData[0].lat), parseFloat(destData[0].lon));
 
-      // Create routing control
+      // Fit map bounds to show both locations
+      mapRef.current.fitBounds(L.latLngBounds([originLatLng, destLatLng]), { padding: [50, 50] });
+
+      // Create routing control with custom options
       const routingControl = (L as any).Routing.control({
         waypoints: [originLatLng, destLatLng],
         routeWhileDragging: false,
         showAlternatives: false,
+        addWaypoints: false,
         lineOptions: {
-          styles: [{ color: '#3b82f6', weight: 5 }]
+          styles: [{ color: '#3b82f6', weight: 5, opacity: 0.7 }]
+        },
+        createMarker: function(i: number, waypoint: any, n: number) {
+          const marker = L.marker(waypoint.latLng, {
+            draggable: false,
+            icon: L.divIcon({
+              html: i === 0 ? '🚩' : '🏁',
+              className: 'route-marker',
+              iconSize: [30, 30]
+            })
+          });
+          return marker;
         }
       }).addTo(mapRef.current);
 
@@ -171,14 +194,22 @@ const RouteWeather = () => {
         const distanceInKm = (route.summary.totalDistance / 1000).toFixed(1);
         setRouteDistance(parseFloat(distanceInKm));
         
-        // Sample points along the route (every ~30km to avoid duplicates)
+        // Sample points intelligently along the route
         const sampledPoints: L.LatLng[] = [];
-        const totalPoints = Math.min(6, Math.ceil(coordinates.length / 20)); // Max 6 points
-        const stepSize = Math.floor(coordinates.length / totalPoints);
+        const minDistanceBetweenPoints = 30000; // 30km minimum distance
         
-        for (let i = 0; i < coordinates.length; i += stepSize) {
-          sampledPoints.push(coordinates[i]);
+        sampledPoints.push(coordinates[0]); // Always include start
+        
+        for (let i = 1; i < coordinates.length - 1; i++) {
+          const lastPoint = sampledPoints[sampledPoints.length - 1];
+          const distance = lastPoint.distanceTo(coordinates[i]);
+          
+          if (distance >= minDistanceBetweenPoints && sampledPoints.length < 6) {
+            sampledPoints.push(coordinates[i]);
+          }
         }
+        
+        sampledPoints.push(coordinates[coordinates.length - 1]); // Always include end
 
         // Fetch weather for each point
         const weatherPromises = sampledPoints.map(point => 
@@ -241,9 +272,15 @@ const RouteWeather = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center gap-3 mb-6">
-          <Navigation className="h-8 w-8 text-primary" />
-          <h1 className="text-3xl font-bold">Route Weather</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <Navigation className="h-8 w-8 text-primary" />
+            <h1 className="text-3xl font-bold">Route Weather</h1>
+          </div>
+          <Button variant="outline" onClick={() => navigate('/')} className="gap-2">
+            <ArrowLeft className="h-4 w-4" />
+            Back to Dashboard
+          </Button>
         </div>
 
         <Card className="p-6">

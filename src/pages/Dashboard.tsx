@@ -70,7 +70,10 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
-    fetchWeather(selectedCity);
+    if (selectedCity) {
+      setSearchCity(selectedCity);
+      fetchWeather(selectedCity);
+    }
   }, [selectedCity]);
 
   const handleSearch = () => {

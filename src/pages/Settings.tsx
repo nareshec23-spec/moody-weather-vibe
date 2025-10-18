@@ -129,6 +129,7 @@ const Settings = () => {
                   <SelectItem value="pt">Português</SelectItem>
                   <SelectItem value="ru">Русский</SelectItem>
                   <SelectItem value="hi">हिन्दी</SelectItem>
+                  <SelectItem value="ta">தமிழ்</SelectItem>
                   <SelectItem value="ko">한국어</SelectItem>
                   <SelectItem value="it">Italiano</SelectItem>
                   <SelectItem value="nl">Nederlands</SelectItem>

@@ -103,7 +103,10 @@ const Forecast = () => {
   };
 
   useEffect(() => {
-    fetchForecast(selectedCity);
+    if (selectedCity) {
+      setSearchCity(selectedCity);
+      fetchForecast(selectedCity);
+    }
   }, [selectedCity]);
 
   const handleSearch = () => {
