@@ -169,12 +169,9 @@ const Recommendations = () => {
   // Sync with AppContext selectedCity
   useEffect(() => {
     const storedCity = localStorage.getItem('selectedCity');
-    if (storedCity) {
-      const parsedCity = JSON.parse(storedCity);
-      if (parsedCity !== currentCity) {
-        fetchWeatherData(parsedCity);
-        setSearchCity(parsedCity);
-      }
+    if (storedCity && storedCity !== currentCity) {
+      fetchWeatherData(storedCity);
+      setSearchCity(storedCity);
     }
   }, []);
 
