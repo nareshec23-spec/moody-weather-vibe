@@ -162,12 +162,17 @@ const RouteWeather = () => {
       // Fit map bounds to show both locations
       mapRef.current.fitBounds(L.latLngBounds([originLatLng, destLatLng]), { padding: [50, 50] });
 
-      // Create routing control with custom options
+      // Create routing control with custom options and router configuration
       const routingControl = (L as any).Routing.control({
         waypoints: [originLatLng, destLatLng],
+        router: (L as any).Routing.osrmv1({
+          serviceUrl: 'https://router.project-osrm.org/route/v1',
+          profile: 'driving'
+        }),
         routeWhileDragging: false,
         showAlternatives: false,
         addWaypoints: false,
+        fitSelectedRoutes: true,
         lineOptions: {
           styles: [{ color: '#3b82f6', weight: 5, opacity: 0.7 }]
         },
